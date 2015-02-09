@@ -53,37 +53,40 @@ def convert_continuations(sources_in):
 
     sources_in_split = sources_in.split('\n')
 
-    lines_that_continue = []
+    # first we find all lines that have old school
+    # style continuation markers
+    lines_old_markers = []
     for i, line in enumerate(sources_in_split):
-        # empty lines cannot continue
-        if len(line) > 0:
-            # ignore CPP lines
-            if line[0] != '#':
-                # last line cannot continue
-                if i + 1 < len(sources_in_split):
-                    # line can only continue if next line is longer than 5
-                    if len(sources_in_split[i+1]) > 5:
-                        # check the presence of a continuation marker which can be any ASCII character (not only '&')
-                        if sources_in_split[i+1][0:4] == '    ' and sources_in_split[i+1][5] != ' ':
-                            lines_that_continue.append(i)
+        if len(line) > 6:
+            if line[0:4] == '    ' and line[5] != ' ':
+                lines_old_markers.append(i)
 
-    # we add continuations at the end of the lines
+    # now for each of these we will go backwards
+    # until we find a line that is a real code line
+    lines_new_markers = []
+    for i in lines_old_markers:
+        for j in range(i-1, -1, -1):
+            if len(sources_in_split[j]) > 0 and not sources_in_split[j][0] in ['!', 'C', 'c', '*', '#']:
+                lines_new_markers.append(j)
+                break
+
+    # we replace old continuations by proper & just in case
     sources_temp = []
     for i, line in enumerate(sources_in_split):
+        if i in lines_old_markers:
+            sources_temp.append('     &' + line[6:])
+        else:
+            sources_temp.append(line)
+
+    # we add continuations at the end of the lines
+    sources_out = []
+    for i, line in enumerate(sources_temp):
         s_temp = ''
-        if i in lines_that_continue:
+        if i in lines_new_markers:
             for j in range(72 - len(line)):
                 s_temp += ' '
             s_temp += '&'
-        sources_temp.append(line + s_temp)
-
-    # we replace continuation in next line by proper &
-    sources_out = []
-    for i, line in enumerate(sources_temp):
-        if i-1 in lines_that_continue:
-            sources_out.append('     &' + line[6:])
-        else:
-            sources_out.append(line)
+        sources_out.append(line + s_temp)
 
     return '\n'.join(sources_out)
 
@@ -95,6 +98,9 @@ def test_convert_continuations():
       foo,
      &raboof,
      *raboof,
+     *raboof,
+!
+!
      *raboof
  10
 #ifdef
@@ -105,6 +111,9 @@ def test_convert_continuations():
       foo,                                                              &
      &raboof,                                                           &
      &raboof,                                                           &
+     &raboof,                                                           &
+!
+!
      &raboof
  10
 #ifdef
