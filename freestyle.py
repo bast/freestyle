@@ -15,7 +15,7 @@ def convert_comments(sources_in):
 
     for line in sources_in.split('\n'):
         if len(line) > 0 and line[0] in ['C', 'c', '*']:
-                sources_out.append('!' + line[1:])
+            sources_out.append('!' + line[1:])
         else:
             sources_out.append(line)
 
@@ -70,14 +70,12 @@ def convert_continuations(sources_in):
     # we add continuations at the end of the lines
     sources_temp = []
     for i, line in enumerate(sources_in_split):
+        s_temp = ''
         if i in lines_that_continue:
-            s_temp = ''
             for j in range(72 - len(line)):
                 s_temp += ' '
             s_temp += '&'
-            sources_temp.append(line + s_temp)
-        else:
-            sources_temp.append(line)
+        sources_temp.append(line + s_temp)
 
     # we replace continuation in next line by proper &
     sources_out = []
@@ -127,11 +125,9 @@ def main():
         sys.exit()
 
     file_name = sys.argv[1]
-
     with open(file_name, 'r') as fixed_file:
         fixed_sources = fixed_file.read()
-
-    print convert_continuations(convert_comments(fixed_sources))
+        print convert_continuations(convert_comments(fixed_sources))
 
 #-------------------------------------------------------------------------------
 
