@@ -65,7 +65,7 @@ def convert_continuations(sources_in):
     # until we find a line that is a real code line
     lines_new_markers = []
     for i in lines_old_markers:
-        for j in range(i-1, -1, -1):
+        for j in reversed(range(i)):
             if len(sources_in_split[j]) > 0 and not sources_in_split[j][0] in ['!', 'C', 'c', '*', '#']:
                 lines_new_markers.append(j)
                 break
