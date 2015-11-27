@@ -3,8 +3,7 @@
 Script to convert fixed form Fortran files (written in Fortran 77) and
 header files to free form.
 
-Copyright (c) 2015 Radovan Bast
-Licensed under the MIT License
+Copyright (c) 2015 Radovan Bast, licensed under the BSD-3.
 """
 
 #-------------------------------------------------------------------------------
